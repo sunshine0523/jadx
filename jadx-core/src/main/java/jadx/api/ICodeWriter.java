@@ -61,6 +61,9 @@ public interface ICodeWriter {
 
 	ICodeInfo finish();
 
+	// finish with methodMap
+	ICodeInfo finish(Map<String, String> methodMap);
+
 	String getCodeStr();
 
 	int getLength();

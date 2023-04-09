@@ -1,17 +1,10 @@
 package jadx.core.codegen;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jadx.api.impl.SimpleCodeWriter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,6 +61,9 @@ public class ClassGen {
 	@Nullable
 	private NameGen outerNameGen;
 
+	// Save method`s code info
+	private Map<String, String> methodMap;
+
 	public ClassGen(ClassNode cls, JadxArgs jadxArgs) {
 		this(cls, null, jadxArgs.isUseImports(), jadxArgs.isFallbackMode(), jadxArgs.isShowInconsistentCode());
 	}
@@ -84,6 +80,8 @@ public class ClassGen {
 		this.showInconsistentCode = showBadCode;
 
 		this.annotationGen = new AnnotationGen(cls, this);
+
+		this.methodMap = new HashMap<>();
 	}
 
 	public ClassNode getClassNode() {
@@ -116,7 +114,7 @@ public class ClassGen {
 			imports.clear();
 		}
 		clsCode.add(clsBody);
-		return clsCode.finish();
+		return clsCode.finish(methodMap);
 	}
 
 	public void addClassCode(ICodeWriter code) throws CodegenException {
@@ -353,11 +351,17 @@ public class ClassGen {
 	}
 
 	public void addMethodCode(ICodeWriter code, MethodNode mth) throws CodegenException {
+		ICodeWriter methodCodeWriter = new SimpleCodeWriter();
 		CodeGenUtils.addErrorsAndComments(code, mth);
+		//add methodCodeWriter
+		CodeGenUtils.addErrorsAndComments(methodCodeWriter, mth);
 		if (mth.isNoCode()) {
 			MethodGen mthGen = new MethodGen(this, mth);
 			mthGen.addDefinition(code);
 			code.add(';');
+			//add methodCodeWriter
+			mthGen.addDefinition(methodCodeWriter);
+			methodCodeWriter.add(';');
 		} else {
 			boolean badCode = mth.contains(AFlag.INCONSISTENT_CODE);
 			if (badCode && showInconsistentCode) {
@@ -378,6 +382,18 @@ public class ClassGen {
 			code.decIndent();
 			code.startLine('}');
 			code.attachAnnotation(NodeEnd.VALUE);
+			//add methodCodeWriter
+			if (mthGen.addDefinition(methodCodeWriter)) {
+				methodCodeWriter.add(' ');
+			}
+			methodCodeWriter.add('{');
+			methodCodeWriter.incIndent();
+			mthGen.addInstructions(methodCodeWriter);
+			methodCodeWriter.decIndent();
+			methodCodeWriter.startLine('}');
+			methodCodeWriter.attachAnnotation(NodeEnd.VALUE);
+
+			methodMap.put(mth.toString(), methodCodeWriter.getCodeStr());
 		}
 	}
 

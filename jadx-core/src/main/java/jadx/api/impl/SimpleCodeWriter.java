@@ -225,6 +225,14 @@ public class SimpleCodeWriter implements ICodeWriter {
 		return new SimpleCodeInfo(code);
 	}
 
+	@Override
+	public ICodeInfo finish(Map<String, String> methodMap) {
+		removeFirstEmptyLine();
+		String code = buf.toString();
+		buf = null;
+		return new SimpleCodeInfo(code, methodMap);
+	}
+
 	protected void removeFirstEmptyLine() {
 		int len = NL.length();
 		if (buf.length() > len && buf.substring(0, len).equals(NL)) {

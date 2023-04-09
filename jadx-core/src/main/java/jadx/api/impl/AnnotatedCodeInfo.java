@@ -23,6 +23,11 @@ public class AnnotatedCodeInfo implements ICodeInfo {
 	}
 
 	@Override
+	public Map<String, String> getMethodMap() {
+		return null;
+	}
+
+	@Override
 	public ICodeMetadata getCodeMetadata() {
 		return metadata;
 	}
