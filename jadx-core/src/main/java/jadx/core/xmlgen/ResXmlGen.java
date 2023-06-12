@@ -123,14 +123,15 @@ public class ResXmlGen {
 				if (formatValue != null) {
 					cw.add("\" format=\"").add(formatValue);
 				}
-				cw.add("\"");
 			} else {
-				cw.add(ri.getKeyName()).add('\"');
+				cw.add(ri.getKeyName());
 			}
-			cw.add(" parent=\"");
-			if (ri.getParentRef() != 0) {
-				String parent = vp.decodeValue(TYPE_REFERENCE, ri.getParentRef());
-				cw.add(parent);
+			if (ri.getTypeName().equals("style") || ri.getParentRef() != 0) {
+				cw.add("\" parent=\"");
+				if (ri.getParentRef() != 0) {
+					String parent = vp.decodeValue(TYPE_REFERENCE, ri.getParentRef());
+					cw.add(parent);
+				}
 			}
 			cw.add("\">");
 
@@ -242,7 +243,7 @@ public class ResXmlGen {
 			cw.add(" />");
 		} else {
 			cw.add('>');
-			if (itemTag.equals("string")) {
+			if (itemTag.equals("string") || (typeName.equals("array") && valueStr.charAt(0) != '@')) {
 				cw.add(StringUtils.escapeResStrValue(valueStr));
 			} else {
 				cw.add(StringUtils.escapeResValue(valueStr));
