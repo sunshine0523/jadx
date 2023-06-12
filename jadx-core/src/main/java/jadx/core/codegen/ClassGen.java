@@ -400,7 +400,10 @@ public class ClassGen {
 			methodCodeWriter.startLine('}');
 			methodCodeWriter.attachAnnotation(NodeEnd.VALUE);
 
-			methodMap.put(mth.toString(), methodCodeWriter.getCodeStr());
+			String methodKey = mth.getParentClass().toString() + "." + mth.getMethodInfo().getName() + "(" + Utils.listToString(mth.getArgTypes()) + ")";
+			//去掉泛型标识，因为soot method中无法获取泛型信息
+			methodKey = methodKey.replaceAll("<(\\w)>", "");
+			methodMap.put(methodKey, methodCodeWriter.getCodeStr());
 		}
 	}
 
